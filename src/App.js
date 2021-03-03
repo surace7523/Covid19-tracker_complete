@@ -11,9 +11,10 @@ import {
 } from "@material-ui/core";
 import InfoBox from './InfoBox';
 import Table from './Table';
-
-
-
+import {sortData} from './util';
+import LineGraph from './LineGraph';
+import Map from "./Map"; 
+import "leaflet/dist/leaflet.css";
 
 function App() {
 
@@ -21,14 +22,15 @@ function App() {
   const[country, setCountry]=useState(['worldwide']); //default selection of coumtry is worldwide
   const [countryInfo, setCountryInfo] = useState({});
   const[tableData,setTableData]=useState([]);//if says the .map is not a function cehck if usestateis->usestate({});for constant if it is initilized in array first obj needs to in a array befor using map function 
+  const [mapCenter, setMapCenter] = useState({ lat: 34.80746, lng: -40.4796 });
+  const [mapZoom, setMapZoom] = useState(3);
+  const [mapCountries, setMapCountries] = useState([]);
 
 
   //if the different country is selected then to change the setountry to that selected country
   const onCountryChange = async (event) => {
     const countryCode = event.target.value;
-    setCountry(countryCode);
-
-
+   
 
     const url =
     countryCode === "worldwide"
@@ -38,21 +40,29 @@ function App() {
       await fetch(url)
       .then((response) => response.json())
       .then((data) => {
-        
+      
+      
+      setCountry(countryCode);
       setCountryInfo(data);
-     
-       
+
+      
+      setMapCenter([data.countryInfo.lat, data.countryInfo.long]);
+      setMapZoom(4);
       });
   };
 
+  console.log("the data issdsadsd here",mapCenter);
+
   console.log("the data is here",tableData);
 
- 
+
   useEffect(() => {
     fetch("https://disease.sh/v3/covid-19/all")
       .then((response) => response.json())
       .then((data) => {
         setCountryInfo(data);
+      
+      
        
         
       });
@@ -80,10 +90,12 @@ function App() {
           }));
         
 
-         
-         
+      
+         const sortedData= sortData(data);
+         setTableData(sortedData);
          setCountries(countries);
-         setTableData(data);
+        setMapCountries(data);
+                /*setTableData(data);*/
         
           
         });
@@ -136,21 +148,30 @@ function App() {
       
               </div>
 
-
+            
           
 
-                
-                {/*map*/ }
-    </div>
+                <Map
+                 countries={mapCountries}
+               
+                center1={mapCenter}
 
+                
+                zoom1={mapZoom}/>
+                {/*map*/ }
+
+               
+    </div>
+   
 
     <Card className="app__right">
         <CardContent>
           <div className="app__information">
             <h3>Live Cases by Country</h3>
-            <Table countries={tableData} 
-             
-            />
+            <Table countries={tableData} />
+
+            <h3>GRAPH</h3>
+            <LineGraph />
         
           </div>
         </CardContent>
